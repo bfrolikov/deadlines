@@ -9,15 +9,13 @@ const HeaderCell = styled.div`
   border-top: 1px solid rgba(34,36,38,.1);
   border-bottom: 1px solid rgba(34,36,38,.1);
   background: #f9fafb;
-`
-const DateCell = React.forwardRef(({ date }, ref) => {
-    /*const dayOfWeek = processedMoment.format('dddd');
-    <Header>{dayOfWeek.charAt(0).toLocaleUpperCase() + dayOfWeek.substr(1)}</Header>
-    */
+`;
+const DateCell = React.forwardRef(({ date, className }, ref) => {
     return (
-        <HeaderCell ref={ref}>
+        <HeaderCell ref={ref} className={className}>
             <Header as="h2">{date.format('DD.MM')}</Header>
         </HeaderCell>
-    )
+    );
 });
+DateCell.displayName = 'DateCell';
 export default DateCell;
