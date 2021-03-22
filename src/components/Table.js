@@ -6,16 +6,16 @@ import React, { useRef, useEffect } from 'react';
 import { nanoid } from 'nanoid';
 
 const colors = {
-    1: '#4786ff', //blue
-    2: '#d32f2f', //red
-    3: '#4caf50', //green
-    4: '#9c27b0', //purple
-    5: '#ffc107', //amber
-    6: '#ff5722' //orange
+    0: '#4786ff', //blue
+    1: '#d32f2f', //red
+    2: '#4caf50', //green
+    3: '#9c27b0', //purple
+    4: '#ffc107', //amber
+    5: '#ff5722' //orange
 };
 
 const eventHeight = 2.6;
-const eventSpacing = 1.5; //TODO: maybe place these somewhere 
+const eventSpacing = 1.5; //TODO: maybe place these somewhere else
 
 const Grid = styled.div`
   display: grid;
@@ -53,8 +53,15 @@ const Table = ({ events }) => {
     const from = Math.floor((renderedDays - 1) / 2);
     const now = moment();
     const moments = Array.from({ length: renderedDays }, (v, i) => now.clone().add(-from + i, 'days'));
+    const startOfFirst = now.clone().add(-from, 'days').startOf('day');
+    const startOfLast = now.clone().add(renderedDays - 1 - from, 'days').startOf('day');
+    const filteredEvents = events.filter(it => {
+        const startOfStartDate = moment.utc(it.startDate).local().startOf('day');
+        const startOfEndDate = moment.utc(it.endDate).local().startOf('day');
+        return !startOfEndDate.isBefore(startOfFirst) && !startOfStartDate.isAfter(startOfLast);
+    });
     return (
-        <Grid dayCount={renderedDays} eventCount={events.length}>
+        <Grid dayCount={renderedDays} eventCount={filteredEvents.length}>
             {moments.map(it => {
                 return it.isSame(now) ?
                     <CurrentDateCell key={nanoid()} ref={currentDayRef} date={it} /> :
@@ -63,9 +70,12 @@ const Table = ({ events }) => {
             {moments.map(it => {
                 return <DayCell key={nanoid()} col={it.diff(now, 'days') + from + 1} />;
             })}
-            {events.map((v, i) => {
-                const col = moment.utc(v.startDate).local().diff(now, 'days') + from;
-                const len = moment.utc(v.endDate).diff(moment.utc(v.startDate), 'days') + 1;
+            {filteredEvents.map((v, i) => {
+                const startOfStartDate = moment.utc(v.startDate).local().startOf('day');
+                const startOfEndDate = moment.utc(v.endDate).local().startOf('day');
+                const startOfNow = now.startOf('day');
+                const len = startOfEndDate.diff(startOfStartDate, 'days') + 1;
+                const col = startOfStartDate.diff(startOfNow, 'days') + from + 1;
                 const eventProps = {
                     key: v.id,
                     itemNumber: i,
